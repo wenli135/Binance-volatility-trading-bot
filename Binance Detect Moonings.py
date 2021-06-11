@@ -103,7 +103,7 @@ def get_price(add_to_historical=True):
         try:
             prices = client.get_all_tickers()
             break
-        except Exception as e
+        except Exception as e:
             if tr == 2:
                 raise e
             else:
