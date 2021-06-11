@@ -98,7 +98,17 @@ def get_price(add_to_historical=True):
     global historical_prices, hsp_head
 
     initial_price = {}
-    prices = client.get_all_tickers()
+    # retry if network issue
+    for tr in range(0, 3):
+        try:
+            prices = client.get_all_tickers()
+            break
+        except Exception as e
+            if tr == 2:
+                raise e
+            else:
+                print(e)
+                print("Retry {}".format(tr+1))
 
     for coin in prices:
 
@@ -154,6 +164,7 @@ def wait_for_price():
 
         threshold_check = (-1.0 if min_price[coin]['time'] > max_price[coin]['time'] else 1.0) * (float(max_price[coin]['price']) - float(min_price[coin]['price'])) / float(min_price[coin]['price']) * 100
 
+        print(f'Checking price...{coin} price has changed {threshold_check:.2f}%')
         # each coin with higher gains than our CHANGE_IN_PRICE is added to the volatile_coins dict if less than MAX_COINS is not reached.
         if threshold_check > CHANGE_IN_PRICE:
             coins_up +=1
