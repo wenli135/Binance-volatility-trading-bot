@@ -379,6 +379,8 @@ def sell_coins():
         BuyPrice = float(coins_bought[coin]['bought_at'])
         PriceChange = float((LastPrice - BuyPrice) / BuyPrice * 100)
 
+        print(f'Bought At: {BuyPrice:.2f}, TP: {coins_bought[coin]['take_profit']):.2f}, SL: {coins_bought[coin]['stop_loss']:.2f}, TP_Price: {TP:.2f}, SL_Price: {SL:.2f}')
+
         # check that the price is above the take profit and readjust SL and TP accordingly if trialing stop loss used
         if LastPrice > TP and USE_TRAILING_STOP_LOSS:
 
