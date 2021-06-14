@@ -66,6 +66,7 @@ class txcolors:
 
 # Load huobi delegate
 from hb_delegate import General
+from hb_delegate import Trade
 
 
 # tracks profit/loss each session
@@ -261,6 +262,13 @@ def pause_bot():
 
     return
 
+def get_symbol_info(coin):
+    global hbClient
+    if coin not in hbClient.symbolInfo:
+        return None
+    info = hbClient.symbolInfo[coin]
+    return info
+
 
 def convert_volume():
     '''Converts the volume given in QUANTITY from USDT to the each coin's volume'''
@@ -274,36 +282,22 @@ def convert_volume():
         # Find the correct step size for each coin
         # max accuracy for BTC for example is 6 decimal points
         # while XRP is only 1
-        try:
-            info = client.get_symbol_info(coin)
-            step_size = info['filters'][2]['stepSize']
-            lot_size[coin] = step_size.index('1') - 1
-
-            if lot_size[coin] < 0:
-                lot_size[coin] = 0
-
-        except:
-            pass
-
-        # calculate the volume in coin from QUANTITY in USDT (default)
         volume[coin] = float(QUANTITY / float(last_price[coin]['price']))
-
-        # define the volume with the correct step size
-        if coin not in lot_size:
+        info = get_symbol_info(coin)
+        if info is None:
             volume[coin] = float('{:.1f}'.format(volume[coin]))
-
         else:
-            # if lot size has 0 decimal points, make the volume an integer
-            if lot_size[coin] == 0:
+            if info['amount_precision'] == 0:
                 volume[coin] = int(volume[coin])
             else:
-                volume[coin] = float('{:.{}f}'.format(volume[coin], lot_size[coin]))
+                volume[coin] = float('{:.{}f}'.format(volume[coin], info['amount_precision']))
 
     return volume, last_price
 
 
 def buy():
     '''Place Buy market orders for each volatile coin found'''
+    global client_order_id
     volume, last_price = convert_volume()
     orders = {}
 
@@ -328,35 +322,25 @@ def buy():
 
             # try to create a real order if the test orders did not raise an exception
             try:
-                buy_limit = client.create_order(
-                    symbol = coin,
-                    side = 'BUY',
-                    type = 'MARKET',
-                    quantity = volume[coin]
-                )
-
+                order_id = hbTrade.marketBuy(coin, volume[coin], client_order_id)
+                client_order_id = client_order_id + 1
             # error handling here in case position cannot be placed
             except Exception as e:
                 print(e)
 
             # run the else block if the position has been placed and return order info
             else:
-                orders[coin] = client.get_all_orders(symbol=coin, limit=1)
-
-                # binance sometimes returns an empty list, the code will wait here until binance returns the order
-                while orders[coin] == []:
-                    print('Binance is being slow in returning the order, calling the API again...')
-
-                    orders[coin] = client.get_all_orders(symbol=coin, limit=1)
+                orderInfo = hbTrade.getOrderStatus(order_id)
+#                print("Order info {}".format(orderInfo))
+                while orderInfo['state'] != 'filled' and orderInfo['state'] != 'canceled':
+                    print('Huobi is being slow in returning the order, calling the API again...')
                     time.sleep(1)
-
+                    orderInfo = hbTrade.getOrderStatus(order_id)
                 else:
-                    print('Order returned, saving order to file')
-
-                    # Log trade
-                    if LOG_TRADES:
-                        write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
-
+                    print('Order returned, [{}, {}]'.format(order_id, orderInfo['state']))
+                    if orderInfo['state'] == 'filled':
+                        if LOG_TRADES:
+                            write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
 
         else:
             print(f'Signal detected, but there is already an active trade on {coin}')
@@ -368,6 +352,7 @@ def sell_coins():
     '''sell coins that have reached the STOP LOSS or TAKE PROFIT threshold'''
 
     global hsp_head, session_profit
+    global hbTrade
 
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
@@ -400,16 +385,26 @@ def sell_coins():
 
             # try to create a real order
             try:
-
                 if not TEST_MODE:
-                    sell_coins_limit = client.create_order(
-                        symbol = coin,
-                        side = 'SELL',
-                        type = 'MARKET',
-                        quantity = coins_bought[coin]['volume']
-
-                    )
-
+                    qty = coins_bought[coin]['volume']
+                    symInfo = hbClient.getSymbolInfo(coin)
+                    if symInfo is None:
+                        qty = coins_bought[coin]['volume']
+                    else:
+                        if coins_bought[coin]['volume'] == 0:
+                            qty = qty // 1
+                        else:
+                            factor = 1 / (10 ** coins_bought[coin]['volume'])
+                            qty = (qty // factor) * factor
+                    orderId = hbTrade.marketSell(coin, qty, client_order_id)
+                    client_order_id = client_order_id + 1
+                    orderInfo = hbTrade.getOrderStatus(orderId)
+                    while orderInfo['state'] != 'filled': 
+                        print('Huobi is being slow in returning the order, calling the API again...')
+                        if orderInfo['state'] == 'canceled':
+                            raise Exception("Order[{}] cancelled".format(orderId))
+                        time.sleep(1)
+                        orderInfo = hbTrade.getOrderStatus(orderId)
             # error handling here in case position cannot be placed
             except Exception as e:
                 print(e)
@@ -534,16 +529,18 @@ if __name__ == '__main__':
 
 
     # Authenticate with the client, Ensure API key is good before continuing
-    if AMERICAN_USER:
-        client = Client(access_key, secret_key, tld='us')
-    else:
-        client = Client(access_key, secret_key)
+#    if AMERICAN_USER:
+#        client = Client(access_key, secret_key, tld='us')
+#    else:
+#        client = Client(access_key, secret_key)
+    client_order_id = 1
+    hbTrade = Trade(access_key, secret_key)
         
     # If the users has a bad / incorrect API key.
     # this will stop the script from starting, and display a helpful error.
-    api_ready, msg = test_api_key(client, BinanceAPIException)
-    if api_ready is not True:
-       exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
+#    api_ready, msg = test_api_key(client, BinanceAPIException)
+#    if api_ready is not True:
+#       exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
 
     # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
     if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]

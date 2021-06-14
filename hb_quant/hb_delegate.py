@@ -1,5 +1,4 @@
-#coding: utf8
-from huobi.client.generic import GenericClient
+#coding: utf8 from huobi.client.generic import GenericClient
 from huobi.client.market import MarketClient
 from huobi.client.account import AccountClient
 from huobi.client.trade import TradeClient
@@ -91,8 +90,25 @@ class Trade(object):
         return orderId
 
     def getOrderStatus(self, orderId):
-        info = self._trade.get_match_results_by_order_id(orderId)
-        return info
+#        info = self._trade.get_match_results_by_order_id(orderId)
+        info = self._trade.get_order(orderId)
+        ret = {}
+        ret['id'] = info.id
+        ret['symbol'] = info.symbol
+        ret['account_id'] = info.account_id
+        ret['amount'] = info.amount
+        ret['price'] = info.price
+        ret['created_at'] = info.created_at
+        ret['canceled_at'] = info.canceled_at
+        ret['finished_at'] = info.finished_at
+        ret['type'] = info.type
+        ret['filled_amount'] = info.filled_amount
+        ret['filled_cash_amount'] = info.filled_cash_amount
+        ret['filled_fees'] = info.filled_fees
+        ret['source'] = info.source
+        ret['state'] = info.state
+        ret['client_order_id'] = info.client_order_id
+        return ret
         
             
 if __name__ == '__main__':
@@ -110,8 +126,10 @@ if __name__ == '__main__':
     oId = 296301522690604
     x = tTest.getOrderStatus(oId)
     print("{}".format(x))
-    o = tTest._trade.get_order(oId)
-    o.print_object()
+#    o = tTest._trade.get_order(oId)
+#    o.print_object()
+    o = tTest.getOrderStatus(oId)
+    print("{}".format(o))
     
         
         
