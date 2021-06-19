@@ -322,7 +322,8 @@ def buy():
 
             # try to create a real order if the test orders did not raise an exception
             try:
-                order_id = hbTrade.marketBuy(coin, volume[coin], client_order_id)
+                buyAmount = 100
+                order_id = hbTrade.marketBuy(coin, buyAmount, client_order_id)
                 client_order_id = client_order_id + 1
             # error handling here in case position cannot be placed
             except Exception as e:
@@ -339,6 +340,7 @@ def buy():
                 else:
                     print('Order returned, [{}, {}]'.format(order_id, orderInfo['state']))
                     if orderInfo['state'] == 'filled':
+                        volume[coin] = orderInfo['filled_amount']
                         if LOG_TRADES:
                             write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
 
