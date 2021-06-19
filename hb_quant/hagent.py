@@ -343,6 +343,15 @@ def buy():
                 else:
                     print('Order returned, [{}, {}]'.format(order_id, orderInfo['state']))
                     if orderInfo['state'] == 'filled':
+                        orders[coin] = {
+                            'symbol': orderInfo['symbol'],
+                            'orderid': order_id,
+                            'timestamp': orderInfo['finished_at'],
+                            'bought_at': orderInfo['price'],
+                            'volume': orderInfo['filled_amount'],
+                            'stop_loss': -STOP_LOSS,
+                            'take_profit': TAKE_PROFIT,
+                                }
                         volume[coin] = orderInfo['filled_amount']
                         if LOG_TRADES:
                             write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
