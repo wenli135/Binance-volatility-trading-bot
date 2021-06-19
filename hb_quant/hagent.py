@@ -325,7 +325,8 @@ def buy():
 
             # try to create a real order if the test orders did not raise an exception
             try:
-                order_id = hbTrade.marketBuy(coin, volume[coin], client_order_id)
+                buyAmount = 100
+                order_id = hbTrade.marketBuy(coin, buyAmount, client_order_id)
                 client_order_id = client_order_id + 1
             # error handling here in case position cannot be placed
             except Exception as e:
@@ -342,6 +343,7 @@ def buy():
                 else:
                     print('Order returned, [{}, {}]'.format(order_id, orderInfo['state']))
                     if orderInfo['state'] == 'filled':
+                        volume[coin] = orderInfo['filled_amount']
                         if LOG_TRADES:
                             write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
 
@@ -380,6 +382,10 @@ def sell_coins():
             coins_bought[coin]['take_profit'] = PriceChange + TRAILING_TAKE_PROFIT
             coins_bought[coin]['stop_loss'] = coins_bought[coin]['take_profit'] - TRAILING_STOP_LOSS
             if DEBUG: print(f"{coin} TP reached, adjusting TP {coins_bought[coin]['take_profit']:.2f}  and SL {coins_bought[coin]['stop_loss']:.2f} accordingly to lock-in profit")
+            continue
+
+        if LastPrice <= BuyPrice:
+            # No loss sell
             continue
 
         # check that the price is below the stop loss or above take profit (if trailing stop loss not used) and sell if this is the case
