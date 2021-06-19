@@ -457,10 +457,10 @@ def update_portfolio(orders, last_price, volume):
     for coin in orders:
 
         coins_bought[coin] = {
-            'symbol': orders[coin][0]['symbol'],
-            'orderid': orders[coin][0]['orderId'],
-            'timestamp': orders[coin][0]['time'],
-            'bought_at': last_price[coin]['price'],
+            'symbol': orders[coin]['symbol'],
+            'orderid': orders[coin]['orderId'],
+            'timestamp': orders[coin]['time'],
+            'bought_at': orders[coin]['bought_at'],
             'volume': volume[coin],
             'stop_loss': -STOP_LOSS,
             'take_profit': TAKE_PROFIT,
