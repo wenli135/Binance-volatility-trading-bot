@@ -107,6 +107,8 @@ def get_price(add_to_historical=True):
         try:
 #            prices = client.get_all_tickers()
             prices = hbClient.getTickers()
+            prices = list(prices.values())
+            print("p1{}".format(prices))
             break
         except Exception as e:
             if tr == 2:
@@ -124,6 +126,7 @@ def get_price(add_to_historical=True):
             if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
                 initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
 
+    print("p{}".format(initial_price))
     if add_to_historical:
         hsp_head += 1
 
@@ -150,10 +153,10 @@ def wait_for_price():
 
     pause_bot()
 
-    if historical_prices[hsp_head]['BTC' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)):
+    if historical_prices[hsp_head]['btc' + PAIR_WITH]['time'] > datetime.now() - timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)):
 
         # sleep for exactly the amount of time required
-        time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['BNB' + PAIR_WITH]['time'])).total_seconds())
+        time.sleep((timedelta(minutes=float(TIME_DIFFERENCE / RECHECK_INTERVAL)) - (datetime.now() - historical_prices[hsp_head]['btc' + PAIR_WITH]['time'])).total_seconds())
 
     print(f'Working...Session profit:{session_profit:.2f}% Est:${(QUANTITY * session_profit)/100:.2f}')
 
@@ -517,7 +520,6 @@ if __name__ == '__main__':
     if DEBUG_SETTING or args.debug:
         DEBUG = True
 
-    hbClient = General(CUSTOM_LIST)
 
 
     # Load creds for correct environment
@@ -543,7 +545,10 @@ if __name__ == '__main__':
 #       exit(f'{txcolors.SELL_LOSS}{msg}{txcolors.DEFAULT}')
 
     # Use CUSTOM_LIST symbols if CUSTOM_LIST is set to True
+    tickers = []
     if CUSTOM_LIST: tickers=[line.strip() for line in open(TICKERS_LIST)]
+    print("tickers{}".format(tickers))
+    hbClient = General(["{}usdt".format(t) for t in tickers])
 
     # try to load all the coins bought by the bot if the file exists and is not empty
     coins_bought = {}

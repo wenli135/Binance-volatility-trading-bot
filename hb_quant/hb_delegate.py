@@ -1,4 +1,5 @@
-#coding: utf8 from huobi.client.generic import GenericClient
+#coding: utf8 
+from huobi.client.generic import GenericClient
 from huobi.client.market import MarketClient
 from huobi.client.account import AccountClient
 from huobi.client.trade import TradeClient
