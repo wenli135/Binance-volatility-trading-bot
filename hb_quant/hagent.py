@@ -458,7 +458,7 @@ def update_portfolio(orders, last_price, volume):
 
         coins_bought[coin] = {
             'symbol': orders[coin]['symbol'],
-            'orderid': orders[coin]['orderId'],
+            'orderid': orders[coin]['orderid'],
             'timestamp': orders[coin]['time'],
             'bought_at': orders[coin]['bought_at'],
             'volume': volume[coin],
