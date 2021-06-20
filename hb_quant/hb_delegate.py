@@ -16,7 +16,7 @@ class General(object):
         self.symbolInfo = {}
         self._getSymbolInfo()
 
-    def _getSymbolInfo(self):
+    def getSymbolInfo(self):
         '''
             获取关心的交易对信息，如报价精度等
         '''
