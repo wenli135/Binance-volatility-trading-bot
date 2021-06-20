@@ -474,7 +474,7 @@ def update_portfolio(orders, last_price, volume):
         with open(coins_bought_file_path, 'w') as file:
             json.dump(coins_bought, file, indent=4)
 
-        print(f'Order with id {orders[coin]["orderId"]} placed and saved to file')
+        print(f'Order with id {orders[coin]["orderid"]} placed and saved to file')
 
 
 def remove_from_portfolio(coins_sold):
