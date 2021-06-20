@@ -351,12 +351,12 @@ def buy():
                             'symbol': orderInfo['symbol'],
                             'orderid': order_id,
                             'timestamp': orderInfo['finished_at'],
-                            'bought_at': orderInfo['filled_cash_amount'] / orderInfo['filled_amount'],
-                            'volume': orderInfo['filled_amount'],
+                            'bought_at': float(orderInfo['filled_cash_amount']) / float(orderInfo['filled_amount']),
+                            'volume': float(orderInfo['filled_amount']),
                             'stop_loss': -STOP_LOSS,
                             'take_profit': TAKE_PROFIT,
                                 }
-                        volume[coin] = orderInfo['filled_amount']
+                        volume[coin] = float(orderInfo['filled_amount'])
                         if LOG_TRADES:
                             write_log(f"Buy : {volume[coin]} {coin} - {last_price[coin]['price']}")
 
