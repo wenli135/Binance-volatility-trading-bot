@@ -500,6 +500,7 @@ if __name__ == '__main__':
 
     # set to false at Start
     global bot_paused
+    global client_order_id
     bot_paused = False
 
     DEFAULT_CONFIG_FILE = 'config.yml'
