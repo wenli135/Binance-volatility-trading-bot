@@ -409,14 +409,14 @@ def sell_coins():
             try:
                 if not TEST_MODE:
                     qty = coins_bought[coin]['volume']
-                    symInfo = hbClient.getSymbolInfo(coin)
+                    symInfo = hbClient.symbolInfo
                     if symInfo is None:
                         qty = coins_bought[coin]['volume']
                     else:
-                        if coins_bought[coin]['volume'] == 0:
+                        if symInfo[coin]['amount_precision'] == 0:
                             qty = qty // 1
                         else:
-                            factor = 1 / (10 ** coins_bought[coin]['volume'])
+                            factor = 1 / (10 ** symInfo[coin]['amount_precision'])
                             qty = (qty // factor) * factor
                     orderId = hbTrade.marketSell(coin, qty, client_order_id)
                     client_order_id = client_order_id + 1
