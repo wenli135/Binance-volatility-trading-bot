@@ -351,7 +351,7 @@ def buy():
                             'symbol': orderInfo['symbol'],
                             'orderid': order_id,
                             'timestamp': orderInfo['finished_at'],
-                            'bought_at': orderInfo['price'],
+                            'bought_at': orderInfo['filled_cash_amount'] / orderInfo['filled_amount'],
                             'volume': orderInfo['filled_amount'],
                             'stop_loss': -STOP_LOSS,
                             'take_profit': TAKE_PROFIT,
