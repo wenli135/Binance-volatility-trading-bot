@@ -371,6 +371,7 @@ def sell_coins():
 
     global hsp_head, session_profit
     global hbTrade
+    global client_order_id
 
     last_price = get_price(False) # don't populate rolling window
     #last_price = get_price(add_to_historical=True) # don't populate rolling window
