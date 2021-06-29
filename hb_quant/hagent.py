@@ -163,7 +163,7 @@ def wait_for_price():
     # retreive latest prices
     get_price()
 
-    if historical_prices[hsp_head]['btc' + PAIR_WITH]['price'] > 35000:
+    if historical_prices[hsp_head]['btc' + PAIR_WITH]['price'] > 40000:
         # No buy in if bit higher than 40000
         return {}, 0, historical_prices[hsp_head]
 
