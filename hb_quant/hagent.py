@@ -108,7 +108,7 @@ def get_price(add_to_historical=True):
 #            prices = client.get_all_tickers()
             prices = hbClient.getTickers()
             prices = list(prices.values())
-            print("p1{}".format(prices))
+            print("Price{}".format(prices))
             break
         except Exception as e:
             if tr == 2:
@@ -126,7 +126,6 @@ def get_price(add_to_historical=True):
             if PAIR_WITH in coin['symbol'] and all(item not in coin['symbol'] for item in FIATS):
                 initial_price[coin['symbol']] = { 'price': coin['price'], 'time': datetime.now()}
 
-    print("p{}".format(initial_price))
     if add_to_historical:
         hsp_head += 1
 
