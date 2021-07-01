@@ -418,7 +418,8 @@ def sell_coins():
                             qty = qty // 1
                         else:
                             factor = 1 / (10 ** symInfo[coin]['amount_precision'])
-                            qty = (qty // factor) * factor
+                            qty1 = round(qty, symInfo[coin]['amount_precision'])
+                            qty = round(qty1 - factor, symInfo[coin]['amount_precision']) if qty1 > qty else qty1
                     orderId = hbTrade.marketSell(coin, qty, client_order_id)
                     client_order_id = client_order_id + 1
                     orderInfo = hbTrade.getOrderStatus(orderId)
